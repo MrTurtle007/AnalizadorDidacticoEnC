@@ -130,7 +130,7 @@ public class IDE extends javax.swing.JFrame {
         txtCodigoC.setRows(5);
         txtCodigoC.setCaretColor(new java.awt.Color(0, 0, 0));
         txtCodigoC.setDisabledTextColor(new java.awt.Color(0, 0, 0));
-        txtCodigoC.setSelectedTextColor(new java.awt.Color(0, 0, 0));
+        txtCodigoC.setSelectedTextColor(new java.awt.Color(255, 255, 0));
         txtCodigoC.setSelectionColor(new java.awt.Color(0, 0, 0));
         jScrollPane1.setViewportView(txtCodigoC);
 
@@ -281,7 +281,7 @@ public class IDE extends javax.swing.JFrame {
 
     private void itemAbrirArchivoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_itemAbrirArchivoActionPerformed
         //primero se checa si el archivo no es null
-        if(archivoActual != null || !txtCodigoC.getText().equals("")){
+        if(!txtCodigoC.getText().equals("")){
             //checar si el archivo actual esta guardado
             if(verificarArchivoGuardar == false){
                 int confirmacion = JOptionPane.showConfirmDialog(null, "Alto ahí!!! ¿Deseas guardar tu archivo?", "Guardar", 
@@ -290,7 +290,7 @@ public class IDE extends javax.swing.JFrame {
                 // 0=ok, 2=cancel
                 if(confirmacion == 0){
                     //guarda el contenido
-                    escribirArchivo();
+                    ventanaGuardar();
                 }
             }
         }
@@ -325,6 +325,9 @@ public class IDE extends javax.swing.JFrame {
                 
                 //se pone en el txt del Código
                 txtCodigoC.setText(cadena);
+                
+                //el archivo no tendrá modificación, ya que apenas se abrió
+                verificarArchivoGuardar = true;
                 
             } catch (FileNotFoundException ex) {
                 //configuraciones de que el archivo no se encuentre
@@ -363,27 +366,35 @@ public class IDE extends javax.swing.JFrame {
                     // 0=ok, 2=cancel
                     if(confirmacion == 0){
                         //guarda el contenido
-                        escribirArchivo();
+                        ventanaGuardar();
+                        
+                        //si se seleccionó un archivo, se borrará
+                        if(verificarArchivoGuardar == true){
+                            //este solo dejará la parte del "código" vacia
+                            txtCodigoC.setText("");
+                            archivoActual = null;
+                        }
+                    }
+                    else{
+                        //este solo dejará la parte del "código" vacia
+                        txtCodigoC.setText("");
+                        archivoActual = null;
                     }
                 }
-                
-                //este solo dejará la parte del "código" vacia
-                txtCodigoC.setText("");
-                archivoActual = null;
             }
         }
     }//GEN-LAST:event_itemNuevoActionPerformed
 
     private void itemSalirActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_itemSalirActionPerformed
         //checar si el archivo actual esta guardado
-        if(verificarArchivoGuardar == false || archivoActual == null){
+        if(!txtCodigoC.getText().equals("")){
             int confirmacion = JOptionPane.showConfirmDialog(null, "Alto ahí!!! ¿Deseas guardar tu archivo?", "Guardar", 
                 JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE);
 
             // 0=ok, 2=cancel
             if(confirmacion == 0){
                 //guarda el contenido
-                escribirArchivo();
+                ventanaGuardar();
             }
         }
         
@@ -415,7 +426,7 @@ public class IDE extends javax.swing.JFrame {
 
     private void itemCerrarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_itemCerrarActionPerformed
         //primero se checa si el archivo no es null
-        if(archivoActual != null || !txtCodigoC.getText().equals("")){
+        if(!txtCodigoC.getText().equals("")){
             //checar si el archivo actual esta guardado
             if(verificarArchivoGuardar == false){
                 int confirmacion = JOptionPane.showConfirmDialog(null, "Alto ahí!!! ¿Deseas guardar tu archivo?", "Guardar", 
@@ -426,17 +437,18 @@ public class IDE extends javax.swing.JFrame {
                     //guarda el contenido
                     ventanaGuardar();
 
-                    if(archivoActual != null){
+                    //si se seleccionó un archivo, se borrará
+                    if(verificarArchivoGuardar == true){
                         //este solo dejará la parte del "código" vacia
                         txtCodigoC.setText("");
                         archivoActual = null;
                     }
                 }
-                else{
-                    //este solo dejará la parte del "código" vacia
-                    txtCodigoC.setText("");
-                    archivoActual = null;
-                }
+            }
+            else{
+                //este solo dejará la parte del "código" vacia
+                txtCodigoC.setText("");
+                archivoActual = null;
             }
         }
     }//GEN-LAST:event_itemCerrarActionPerformed
