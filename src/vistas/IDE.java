@@ -55,8 +55,8 @@ public class IDE extends javax.swing.JFrame {
         lblSalida = new org.edisoncor.gui.label.LabelRect();
         jVariables = new javax.swing.JPanel();
         jSalidas = new javax.swing.JPanel();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        txtCodigoC = new javax.swing.JTextArea();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        txtCodigoC = new javax.swing.JTextPane();
         menuArriba = new javax.swing.JMenuBar();
         menuArchivo = new javax.swing.JMenu();
         itemNuevo = new javax.swing.JMenuItem();
@@ -66,9 +66,9 @@ public class IDE extends javax.swing.JFrame {
         itemGuardarComo = new javax.swing.JMenuItem();
         itemSalir = new javax.swing.JMenuItem();
         menuEditar = new javax.swing.JMenu();
-        jMenuItem6 = new javax.swing.JMenuItem();
-        jMenuItem7 = new javax.swing.JMenuItem();
-        jMenuItem8 = new javax.swing.JMenuItem();
+        itemCopiar = new javax.swing.JMenuItem();
+        itemPegar = new javax.swing.JMenuItem();
+        itemCortar = new javax.swing.JMenuItem();
         menuCompilar = new javax.swing.JMenu();
         menuEjecutar = new javax.swing.JMenu();
         jMenuItem9 = new javax.swing.JMenuItem();
@@ -120,19 +120,10 @@ public class IDE extends javax.swing.JFrame {
         );
         jSalidasLayout.setVerticalGroup(
             jSalidasLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 0, Short.MAX_VALUE)
+            .addGap(0, 479, Short.MAX_VALUE)
         );
 
-        txtCodigoC.setBackground(new java.awt.Color(153, 153, 153));
-        txtCodigoC.setColumns(20);
-        txtCodigoC.setFont(new java.awt.Font("Consolas", 0, 12)); // NOI18N
-        txtCodigoC.setForeground(new java.awt.Color(0, 0, 0));
-        txtCodigoC.setRows(5);
-        txtCodigoC.setCaretColor(new java.awt.Color(0, 0, 0));
-        txtCodigoC.setDisabledTextColor(new java.awt.Color(0, 0, 0));
-        txtCodigoC.setSelectedTextColor(new java.awt.Color(255, 255, 0));
-        txtCodigoC.setSelectionColor(new java.awt.Color(0, 0, 0));
-        jScrollPane1.setViewportView(txtCodigoC);
+        jScrollPane2.setViewportView(txtCodigoC);
 
         javax.swing.GroupLayout panelDeVentanasLayout = new javax.swing.GroupLayout(panelDeVentanas);
         panelDeVentanas.setLayout(panelDeVentanasLayout);
@@ -148,7 +139,7 @@ public class IDE extends javax.swing.JFrame {
                 .addGap(164, 164, 164))
             .addGroup(panelDeVentanasLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 429, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 429, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addComponent(jVariables, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
@@ -166,8 +157,8 @@ public class IDE extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(panelDeVentanasLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jSalidas, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 481, Short.MAX_VALUE)
-                    .addComponent(jVariables, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(jVariables, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jScrollPane2))
                 .addContainerGap())
         );
 
@@ -227,19 +218,29 @@ public class IDE extends javax.swing.JFrame {
 
         menuEditar.setText("Editar");
 
-        jMenuItem6.setText("Copiar");
-        menuEditar.add(jMenuItem6);
-
-        jMenuItem7.setText("Pegar");
-        jMenuItem7.addActionListener(new java.awt.event.ActionListener() {
+        itemCopiar.setText("Copiar");
+        itemCopiar.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jMenuItem7ActionPerformed(evt);
+                itemCopiarActionPerformed(evt);
             }
         });
-        menuEditar.add(jMenuItem7);
+        menuEditar.add(itemCopiar);
 
-        jMenuItem8.setText("Cortar");
-        menuEditar.add(jMenuItem8);
+        itemPegar.setText("Pegar");
+        itemPegar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                itemPegarActionPerformed(evt);
+            }
+        });
+        menuEditar.add(itemPegar);
+
+        itemCortar.setText("Cortar");
+        itemCortar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                itemCortarActionPerformed(evt);
+            }
+        });
+        menuEditar.add(itemCortar);
 
         menuArriba.add(menuEditar);
 
@@ -341,9 +342,10 @@ public class IDE extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_itemAbrirArchivoActionPerformed
 
-    private void jMenuItem7ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem7ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jMenuItem7ActionPerformed
+    private void itemPegarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_itemPegarActionPerformed
+        //pegará lo que se tiene copiado
+        txtCodigoC.paste();
+    }//GEN-LAST:event_itemPegarActionPerformed
 
     private void itemNuevoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_itemNuevoActionPerformed
         //simplemente preguntará si se quiere uno nuevo y hacer las configuraciones necesarias
@@ -453,6 +455,16 @@ public class IDE extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_itemCerrarActionPerformed
 
+    private void itemCopiarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_itemCopiarActionPerformed
+        //copiará el texto seleccionado
+        txtCodigoC.copy();
+    }//GEN-LAST:event_itemCopiarActionPerformed
+
+    private void itemCortarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_itemCortarActionPerformed
+        //cortará el texto seleccionado
+        txtCodigoC.cut();
+    }//GEN-LAST:event_itemCortarActionPerformed
+
     private void ventanaGuardar(){
         JFileChooser archivoGuardar = new JFileChooser();
 
@@ -529,17 +541,17 @@ public class IDE extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenuItem itemAbrirArchivo;
     private javax.swing.JMenuItem itemCerrar;
+    private javax.swing.JMenuItem itemCopiar;
+    private javax.swing.JMenuItem itemCortar;
     private javax.swing.JMenuItem itemGuardar;
     private javax.swing.JMenuItem itemGuardarComo;
     private javax.swing.JMenuItem itemNuevo;
+    private javax.swing.JMenuItem itemPegar;
     private javax.swing.JMenuItem itemSalir;
     private javax.swing.JMenuItem jMenuItem10;
-    private javax.swing.JMenuItem jMenuItem6;
-    private javax.swing.JMenuItem jMenuItem7;
-    private javax.swing.JMenuItem jMenuItem8;
     private javax.swing.JMenuItem jMenuItem9;
     private javax.swing.JPanel jSalidas;
-    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JPanel jVariables;
     private org.edisoncor.gui.label.LabelRect lblCodigo;
     private org.edisoncor.gui.label.LabelRect lblSalida;
@@ -550,6 +562,6 @@ public class IDE extends javax.swing.JFrame {
     private javax.swing.JMenu menuEditar;
     private javax.swing.JMenu menuEjecutar;
     private javax.swing.JPanel panelDeVentanas;
-    private javax.swing.JTextArea txtCodigoC;
+    private javax.swing.JTextPane txtCodigoC;
     // End of variables declaration//GEN-END:variables
 }
