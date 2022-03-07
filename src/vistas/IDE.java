@@ -5,12 +5,16 @@
  */
 package vistas;
 
+import clases.NumeroLinea;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import javax.swing.JFileChooser;
+import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
 /**
@@ -21,6 +25,7 @@ public class IDE extends javax.swing.JFrame {
     
     private File archivoActual;
     private boolean verificarArchivoGuardar = false;
+    private NumeroLinea numerolinea;
 
     /**
      * Creates new form pantallaPrincipal
@@ -34,10 +39,13 @@ public class IDE extends javax.swing.JFrame {
         //pone el frame ajustado a pantalla completa
         this.setExtendedState(MAXIMIZED_BOTH);
         
-        //se ponen sin color porque gráfico no hace caso la PTM!!!
+        //se ponen sin color porque en la parte del diseño no hace caso la PTM!!!
         lblCodigo.setBackground(null);
         lblVariables.setBackground(null);
         lblSalida.setBackground(null);
+        
+        numeroDeLinea();
+        cerrarAplicacion();
     }
 
     /**
@@ -54,9 +62,10 @@ public class IDE extends javax.swing.JFrame {
         lblVariables = new org.edisoncor.gui.label.LabelRect();
         lblSalida = new org.edisoncor.gui.label.LabelRect();
         jVariables = new javax.swing.JPanel();
-        jSalidas = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
         txtCodigoC = new javax.swing.JTextPane();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        txtSalida = new javax.swing.JTextArea();
         menuArriba = new javax.swing.JMenuBar();
         menuArchivo = new javax.swing.JMenu();
         itemNuevo = new javax.swing.JMenuItem();
@@ -108,22 +117,16 @@ public class IDE extends javax.swing.JFrame {
             .addGap(0, 0, Short.MAX_VALUE)
         );
 
-        jSalidas.setBackground(new java.awt.Color(0, 51, 51));
-        jSalidas.setBorder(javax.swing.BorderFactory.createMatteBorder(1, 1, 1, 1, new java.awt.Color(255, 255, 255)));
-        jSalidas.setName("panel1"); // NOI18N
-
-        javax.swing.GroupLayout jSalidasLayout = new javax.swing.GroupLayout(jSalidas);
-        jSalidas.setLayout(jSalidasLayout);
-        jSalidasLayout.setHorizontalGroup(
-            jSalidasLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 0, Short.MAX_VALUE)
-        );
-        jSalidasLayout.setVerticalGroup(
-            jSalidasLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 479, Short.MAX_VALUE)
-        );
-
+        txtCodigoC.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                txtCodigoCKeyReleased(evt);
+            }
+        });
         jScrollPane2.setViewportView(txtCodigoC);
+
+        txtSalida.setColumns(20);
+        txtSalida.setRows(5);
+        jScrollPane1.setViewportView(txtSalida);
 
         javax.swing.GroupLayout panelDeVentanasLayout = new javax.swing.GroupLayout(panelDeVentanas);
         panelDeVentanas.setLayout(panelDeVentanasLayout);
@@ -143,7 +146,7 @@ public class IDE extends javax.swing.JFrame {
                 .addGap(18, 18, 18)
                 .addComponent(jVariables, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
-                .addComponent(jSalidas, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jScrollPane1)
                 .addContainerGap())
         );
         panelDeVentanasLayout.setVerticalGroup(
@@ -156,9 +159,9 @@ public class IDE extends javax.swing.JFrame {
                     .addComponent(lblVariables, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(panelDeVentanasLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jSalidas, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jVariables, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jScrollPane2))
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 481, Short.MAX_VALUE)
+                    .addComponent(jScrollPane1))
                 .addContainerGap())
         );
 
@@ -388,31 +391,11 @@ public class IDE extends javax.swing.JFrame {
     }//GEN-LAST:event_itemNuevoActionPerformed
 
     private void itemSalirActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_itemSalirActionPerformed
-        //checar si el archivo actual esta guardado
-        if(!txtCodigoC.getText().equals("")){
-            int confirmacion = JOptionPane.showConfirmDialog(null, "Alto ahí!!! ¿Deseas guardar tu archivo?", "Guardar", 
-                JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE);
-
-            // 0=ok, 2=cancel
-            if(confirmacion == 0){
-                //guarda el contenido
-                ventanaGuardar();
-            }
-        }
-        
-        //simplemente preguntará si se quiere salir y hacer las configuraciones necesarias
-        int input = JOptionPane.showConfirmDialog(null, "¿Deseas salir del programa?", "Salir", 
-                JOptionPane.OK_CANCEL_OPTION, JOptionPane.INFORMATION_MESSAGE);
-
-        // 0=ok, 2=cancel
-        if(input == 0){
-            //cerrar programa
-            System.exit(0);
-        }
+        confirmarSalida();
     }//GEN-LAST:event_itemSalirActionPerformed
 
     private void itemGuardarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_itemGuardarActionPerformed
-        //
+        //si el archivo no existe, se guardará como nuevo
         if(archivoActual == null){
             ventanaGuardar();
         }
@@ -465,6 +448,25 @@ public class IDE extends javax.swing.JFrame {
         txtCodigoC.cut();
     }//GEN-LAST:event_itemCortarActionPerformed
 
+    private void txtCodigoCKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtCodigoCKeyReleased
+        //esta sección de código indicará que no se han guardado cambios
+        
+        int keyCode = evt.getKeyCode();
+        
+        if((keyCode >= 65 && keyCode <= 90) || (keyCode >= 48 && keyCode <= 57)
+                || (keyCode >= 97 && keyCode <= 122) || (keyCode != 27 && !(keyCode >= 37
+                && keyCode <= 40) && !(keyCode >= 16
+                && keyCode <= 18) && keyCode != 524
+                && keyCode != 20)){
+            
+            if(!getTitle().contains("*")){
+                setTitle("[Analizador de Código en C]*");
+                verificarArchivoGuardar = false;
+            }
+        
+        }
+    }//GEN-LAST:event_txtCodigoCKeyReleased
+
     private void ventanaGuardar(){
         JFileChooser archivoGuardar = new JFileChooser();
 
@@ -485,6 +487,9 @@ public class IDE extends javax.swing.JFrame {
             
             //si se guardó
             verificarArchivoGuardar = true;
+            
+            //se pone el nombre sin sin "*"
+            setTitle("Analizador de Código en C");
         }
     }
     
@@ -495,10 +500,67 @@ public class IDE extends javax.swing.JFrame {
             
             //si se guardó
             verificarArchivoGuardar = true;
+            
+            //se pone el nombre sin sin "*"
+            setTitle("Analizador de Código en C");
         }
         catch (IOException ex) {
             //configuraciones de otros errores o alguna falla
             System.out.println(ex.getMessage());
+        }
+    }
+    
+    /**
+     * Este método usa la clase NumeroLinea para realizar dicha tarea
+     */
+    private void numeroDeLinea() {
+        numerolinea = new NumeroLinea(txtCodigoC);
+        jScrollPane2.setRowHeaderView(numerolinea);
+    }
+    
+    /**
+     * Este método confirmará el cerrar la aplicacion
+     */
+    public void cerrarAplicacion(){
+        try{
+            this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+            addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent e){
+                confirmarSalida();
+            }});
+            this.setVisible(true);
+        }catch(Exception e){
+            System.out.println(e.getMessage());
+        }
+    }
+    
+    /**
+     * Este método confirmará la salida del programa
+     */
+    public void confirmarSalida(){
+        //primero se checa si el archivo no es null
+        if(!txtCodigoC.getText().equals("")){
+            //checar si el archivo actual esta guardado
+            if(verificarArchivoGuardar == false){
+                int confirmacion = JOptionPane.showConfirmDialog(null, "Alto ahí!!! ¿Deseas guardar tu archivo?", "Guardar", 
+                    JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE);
+
+                // 0=ok, 2=cancel
+                if(confirmacion == 0){
+                    //guarda el contenido
+                    ventanaGuardar();
+                }
+            }
+        }
+        
+        //simplemente preguntará si se quiere salir y hacer las configuraciones necesarias
+        int input = JOptionPane.showConfirmDialog(null, "¿Deseas salir del programa?", "Salir", 
+                JOptionPane.OK_CANCEL_OPTION, JOptionPane.INFORMATION_MESSAGE);
+
+        // 0=ok, 2=cancel
+        if(input == 0){
+            //cerrar programa
+            System.exit(0);
         }
     }
     
@@ -550,7 +612,7 @@ public class IDE extends javax.swing.JFrame {
     private javax.swing.JMenuItem itemSalir;
     private javax.swing.JMenuItem jMenuItem10;
     private javax.swing.JMenuItem jMenuItem9;
-    private javax.swing.JPanel jSalidas;
+    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JPanel jVariables;
     private org.edisoncor.gui.label.LabelRect lblCodigo;
@@ -563,5 +625,7 @@ public class IDE extends javax.swing.JFrame {
     private javax.swing.JMenu menuEjecutar;
     private javax.swing.JPanel panelDeVentanas;
     private javax.swing.JTextPane txtCodigoC;
+    private javax.swing.JTextArea txtSalida;
     // End of variables declaration//GEN-END:variables
+
 }
