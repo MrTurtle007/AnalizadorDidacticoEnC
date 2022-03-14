@@ -6,6 +6,7 @@
 package vistas;
 
 import clases.NumeroLinea;
+import java.awt.Color;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
@@ -16,6 +17,12 @@ import java.io.IOException;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.JTextPane;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultStyledDocument;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyleContext;
 
 /**
  *
@@ -45,6 +52,7 @@ public class IDE extends javax.swing.JFrame {
         lblSalida.setBackground(null);
         
         numeroDeLinea();
+        colorDePalabrasReservadas();
         cerrarAplicacion();
     }
 
@@ -117,6 +125,7 @@ public class IDE extends javax.swing.JFrame {
             .addGap(0, 0, Short.MAX_VALUE)
         );
 
+        txtCodigoC.setFont(new java.awt.Font("Consolas", 1, 12)); // NOI18N
         txtCodigoC.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 txtCodigoCKeyReleased(evt);
@@ -562,6 +571,108 @@ public class IDE extends javax.swing.JFrame {
             //cerrar programa
             System.exit(0);
         }
+    }
+    
+    /**
+     * Método para encontrar las últimas cadenas
+     */
+    private int findLastNonWordChar(String text, int index){
+        //encontrar las últimas
+        while(--index >= 0){
+            // \\ = [A-Za-z0-9]
+            if(String.valueOf(text.charAt(index)).matches("\\W")){
+                break;
+            }
+        }
+        
+        //saber donde nos encontramos
+        return index;
+    }
+    
+    /**
+     * Método para encontrar las primeras cadenas
+     */
+    private int findFirstNonWordChar(String text, int index){
+        //encontrar las últimas
+        while(index < text.length()){
+            // \\ = [A-Za-z0-9]
+            if(String.valueOf(text.charAt(index)).matches("\\W")){
+                break;
+            }
+            index++;
+        }
+        
+        //saber donde nos encontramos
+        return index;
+    }
+    
+    /**
+     * Método para pintar las palabras reservadas
+     */
+    private void colorDePalabrasReservadas(){
+        final StyleContext cont = StyleContext.getDefaultStyleContext();
+        
+        //colores (se declaran en RGB)
+        final AttributeSet att_rojo = cont.addAttribute(cont.getEmptySet(), StyleConstants.Foreground, new Color(249, 249, 249));
+        final AttributeSet att_verde = cont.addAttribute(cont.getEmptySet(), StyleConstants.Foreground, new Color(0, 128, 0));
+        final AttributeSet att_cafe = cont.addAttribute(cont.getEmptySet(), StyleConstants.Foreground, new Color(128, 0, 0));
+        final AttributeSet att_azul = cont.addAttribute(cont.getEmptySet(), StyleConstants.Foreground, new Color(0, 0, 128));
+        final AttributeSet att_negro = cont.addAttribute(cont.getEmptySet(), StyleConstants.Foreground, new Color(0, 0, 0));
+        final AttributeSet att_dorado = cont.addAttribute(cont.getEmptySet(), StyleConstants.Foreground, new Color(128, 128, 0));
+        
+        //estilo
+        DefaultStyledDocument doc = new DefaultStyledDocument(){
+            public void insertString(int offset, String str, AttributeSet a) throws BadLocationException {
+                super.insertString(offset, str, a);
+                
+                String text = getText(0, getLength());
+                int before = findLastNonWordChar(text, offset);
+                
+                if(before < 0){
+                    before = 0;
+                }
+                
+                int after = findFirstNonWordChar(text, offset+str.length());
+                int wordL = before;
+                int wordR = before;
+                
+                while(wordR <= after){
+                    if(wordR == after || String.valueOf(text.charAt(wordR)).matches("\\W")){
+                        if(text.substring(wordL, wordR).matches("(\\W)*(if|else|do|while|for|switch|case)")){
+                            setCharacterAttributes(wordL, wordR - wordL, att_azul, false);
+                        }
+                        else if(text.substring(wordL, wordR).matches("(\\W)*(void|bit|short|int|long|float|double|char)")){
+                            setCharacterAttributes(wordL, wordR - wordL, att_dorado, false);
+                        }
+                        else if(text.substring(wordL, wordR).matches("(\\W)*(main|printf|scanf|pow|sqrt|getch)")){
+                            setCharacterAttributes(wordL, wordR - wordL, att_verde, false);
+                        }
+                        else {
+                            setCharacterAttributes(wordL, wordR - wordL, att_negro, false);
+                        }
+                        
+                        wordL = wordR;
+                    }
+                    wordR++;
+                }
+            }
+            
+            public void remove(int offs, int len) throws BadLocationException {
+                super.remove(offs, len);
+                
+                String text = getText(0, getLength());
+                int before = findLastNonWordChar(text, offs);
+                
+                if(before < 0){
+                    before = 0;
+                }
+            }
+        };
+        
+        JTextPane txt = new JTextPane(doc);
+        String temp = txtCodigoC.getText();
+        txtCodigoC.setStyledDocument(txt.getStyledDocument());
+        txtCodigoC.setText(temp);
     }
     
     /**
