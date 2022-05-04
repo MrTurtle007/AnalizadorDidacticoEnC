@@ -6,18 +6,29 @@
 package vistas;
 
 import clases.NumeroLinea;
+import clases.Sintax;
+import clases.Tokens;
+import clases.claseLexer;
 import java.awt.Color;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.Reader;
+import java.io.StringReader;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java_cup.runtime.Symbol;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JTextPane;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultStyledDocument;
@@ -33,6 +44,10 @@ public class IDE extends javax.swing.JFrame {
     private File archivoActual;
     private boolean verificarArchivoGuardar = false;
     private NumeroLinea numerolinea;
+    //este filtrará los archivos con extensión de C
+    private FileNameExtensionFilter filter = new FileNameExtensionFilter("Archivos legibles para C", "cpp", "c", "txt");
+    //guardará el nombre del archivo
+    private String nombreArchivo = "Analizador de Código en C";
 
     /**
      * Creates new form pantallaPrincipal
@@ -50,7 +65,9 @@ public class IDE extends javax.swing.JFrame {
         lblCodigo.setBackground(null);
         lblVariables.setBackground(null);
         lblSalida.setBackground(null);
+        txtSalida.setForeground(Color.white);
         
+        this.setTitle(nombreArchivo);
         numeroDeLinea();
         colorDePalabrasReservadas();
         cerrarAplicacion();
@@ -86,7 +103,10 @@ public class IDE extends javax.swing.JFrame {
         itemCopiar = new javax.swing.JMenuItem();
         itemPegar = new javax.swing.JMenuItem();
         itemCortar = new javax.swing.JMenuItem();
+        itemLimpiarSalida = new javax.swing.JMenuItem();
         menuCompilar = new javax.swing.JMenu();
+        itemAnalisisLexico = new javax.swing.JMenuItem();
+        itemAnalisisSintactico = new javax.swing.JMenuItem();
         menuEjecutar = new javax.swing.JMenu();
         jMenuItem9 = new javax.swing.JMenuItem();
         jMenuItem10 = new javax.swing.JMenuItem();
@@ -106,11 +126,11 @@ public class IDE extends javax.swing.JFrame {
         lblVariables.setText("Variables en uso");
         lblVariables.setFont(new java.awt.Font("Rockwell", 1, 14)); // NOI18N
 
-        lblSalida.setText("Salida de código");
+        lblSalida.setText("Pantalla de Salida");
         lblSalida.setColorDeBorde(new java.awt.Color(0, 51, 204));
         lblSalida.setFont(new java.awt.Font("Rockwell", 1, 14)); // NOI18N
 
-        jVariables.setBackground(new java.awt.Color(51, 51, 51));
+        jVariables.setBackground(new java.awt.Color(20, 20, 20));
         jVariables.setBorder(javax.swing.BorderFactory.createMatteBorder(1, 1, 1, 1, new java.awt.Color(255, 255, 255)));
         jVariables.setName("panel1"); // NOI18N
 
@@ -125,7 +145,9 @@ public class IDE extends javax.swing.JFrame {
             .addGap(0, 0, Short.MAX_VALUE)
         );
 
+        txtCodigoC.setBackground(new java.awt.Color(0, 0, 0));
         txtCodigoC.setFont(new java.awt.Font("Consolas", 1, 12)); // NOI18N
+        txtCodigoC.setForeground(new java.awt.Color(0, 0, 0));
         txtCodigoC.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 txtCodigoCKeyReleased(evt);
@@ -133,8 +155,12 @@ public class IDE extends javax.swing.JFrame {
         });
         jScrollPane2.setViewportView(txtCodigoC);
 
+        txtSalida.setBackground(new java.awt.Color(0, 51, 51));
         txtSalida.setColumns(20);
+        txtSalida.setFont(new java.awt.Font("Comic Sans MS", 1, 12)); // NOI18N
         txtSalida.setRows(5);
+        txtSalida.setSelectedTextColor(new java.awt.Color(0, 0, 0));
+        txtSalida.setSelectionColor(new java.awt.Color(255, 255, 255));
         jScrollPane1.setViewportView(txtSalida);
 
         javax.swing.GroupLayout panelDeVentanasLayout = new javax.swing.GroupLayout(panelDeVentanas);
@@ -146,7 +172,7 @@ public class IDE extends javax.swing.JFrame {
                 .addComponent(lblCodigo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(347, 347, 347)
                 .addComponent(lblVariables, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 348, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 338, Short.MAX_VALUE)
                 .addComponent(lblSalida, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(164, 164, 164))
             .addGroup(panelDeVentanasLayout.createSequentialGroup()
@@ -254,9 +280,34 @@ public class IDE extends javax.swing.JFrame {
         });
         menuEditar.add(itemCortar);
 
+        itemLimpiarSalida.setText("Limpiar pantalla de salida");
+        itemLimpiarSalida.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                itemLimpiarSalidaActionPerformed(evt);
+            }
+        });
+        menuEditar.add(itemLimpiarSalida);
+
         menuArriba.add(menuEditar);
 
         menuCompilar.setText("Compilar");
+
+        itemAnalisisLexico.setText("Análisis Léxico");
+        itemAnalisisLexico.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                itemAnalisisLexicoActionPerformed(evt);
+            }
+        });
+        menuCompilar.add(itemAnalisisLexico);
+
+        itemAnalisisSintactico.setText("Análisis Sintáctico");
+        itemAnalisisSintactico.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                itemAnalisisSintacticoActionPerformed(evt);
+            }
+        });
+        menuCompilar.add(itemAnalisisSintactico);
+
         menuArriba.add(menuCompilar);
 
         menuEjecutar.setText("Ejecutar");
@@ -297,20 +348,29 @@ public class IDE extends javax.swing.JFrame {
         if(!txtCodigoC.getText().equals("")){
             //checar si el archivo actual esta guardado
             if(verificarArchivoGuardar == false){
-                int confirmacion = JOptionPane.showConfirmDialog(null, "Alto ahí!!! ¿Deseas guardar tu archivo?", "Guardar", 
-                    JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE);
+                int confirmacion = JOptionPane.showConfirmDialog(null, "Alto ahí!!! ¿Deseas guardar tu archivo?",
+                        "Guardar", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE);
 
                 // 0=ok, 2=cancel
                 if(confirmacion == 0){
                     //guarda el contenido
-                    ventanaGuardar();
+                    //si el archivo no existe, se guardará como nuevo
+                    if(archivoActual == null){
+                        ventanaGuardar();
+                    }
+                    else{
+                        //simplemente se guarda
+                        escribirArchivo();
+                    }
                 }
             }
-        }
-        
+        } 
         
         //si se selecciona la opción Abrir... se hará lo siguente
         JFileChooser archivoAbrir = new JFileChooser();
+        
+        //Se visualizarán solo extensiones para C
+        archivoAbrir.setFileFilter(filter);
         
         //que solo se pueda seleccionar un archivo
         archivoAbrir.setMultiSelectionEnabled(false);
@@ -339,17 +399,23 @@ public class IDE extends javax.swing.JFrame {
                 //se pone en el txt del Código
                 txtCodigoC.setText(cadena);
                 
+                //se obtendrá el nombre de archivo
+                nombreArchivo = archivoAbrir.getSelectedFile().getName();
+                setTitle(nombreArchivo);
+                
                 //el archivo no tendrá modificación, ya que apenas se abrió
                 verificarArchivoGuardar = true;
                 
             } catch (FileNotFoundException ex) {
                 //configuraciones de que el archivo no se encuentre
                 System.out.println(ex.getMessage());
-                JOptionPane.showMessageDialog(null, "Oopsi! No pude encontrar el archivo :(", "Archivo no encontrado", JOptionPane.WARNING_MESSAGE);
+                JOptionPane.showMessageDialog(null, "Oopsi! No pude encontrar el archivo :(", "Archivo no encontrado", 
+                        JOptionPane.WARNING_MESSAGE);
             } catch (IOException ex) {
                 //configuraciones de otros errores o alguna falla
                 System.out.println(ex.getMessage());
-                JOptionPane.showMessageDialog(null, "Ay! No puedo abrir el archivo, perdona :\"3", "Error en el archivo", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(null, "Ay! No puedo abrir el archivo, perdona :\"3", "Error en el archivo", 
+                        JOptionPane.ERROR_MESSAGE);
             }
         }
     }//GEN-LAST:event_itemAbrirArchivoActionPerformed
@@ -365,6 +431,7 @@ public class IDE extends javax.swing.JFrame {
             //este solo dejará la parte del "código" vacia
             txtCodigoC.setText("");
             archivoActual = null;
+            setTitle("Analizador de Código en C");
         }
         else{
             int input = JOptionPane.showConfirmDialog(null, "¿Deseas crear un nuevo archivo?", "Archivo nuevo", 
@@ -374,8 +441,8 @@ public class IDE extends javax.swing.JFrame {
             if(input == 0){
                 //si aceptó, tambien debemos preguntarle si desea guardar su archivo, solo si fue editado
                 if(verificarArchivoGuardar == false || archivoActual == null){
-                    int confirmacion = JOptionPane.showConfirmDialog(null, "Alto ahí!!! ¿Deseas guardar tu archivo?", "Guardar", 
-                        JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE);
+                    int confirmacion = JOptionPane.showConfirmDialog(null, "Alto ahí!!! ¿Deseas guardar tu archivo?",
+                            "Guardar", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE);
                     
                     // 0=ok, 2=cancel
                     if(confirmacion == 0){
@@ -387,13 +454,21 @@ public class IDE extends javax.swing.JFrame {
                             //este solo dejará la parte del "código" vacia
                             txtCodigoC.setText("");
                             archivoActual = null;
+                            setTitle("Analizador de Código en C");
                         }
                     }
                     else{
                         //este solo dejará la parte del "código" vacia
                         txtCodigoC.setText("");
                         archivoActual = null;
+                        setTitle("Analizador de Código en C");
                     }
+                }
+                else{
+                    //este solo dejará la parte del "código" vacia
+                    txtCodigoC.setText("");
+                    archivoActual = null;
+                    setTitle("Analizador de Código en C");
                 }
             }
         }
@@ -423,26 +498,42 @@ public class IDE extends javax.swing.JFrame {
         if(!txtCodigoC.getText().equals("")){
             //checar si el archivo actual esta guardado
             if(verificarArchivoGuardar == false){
-                int confirmacion = JOptionPane.showConfirmDialog(null, "Alto ahí!!! ¿Deseas guardar tu archivo?", "Guardar", 
-                    JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE);
+                int confirmacion = JOptionPane.showConfirmDialog(null, "Alto ahí!!! ¿Deseas guardar tu archivo?",
+                        "Guardar", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE);
 
                 // 0=ok, 2=cancel
                 if(confirmacion == 0){
                     //guarda el contenido
-                    ventanaGuardar();
+                    //si el archivo no existe, se guardará como nuevo
+                    if(archivoActual == null){
+                        ventanaGuardar();
+                    }
+                    else{
+                        //simplemente se guarda
+                        escribirArchivo();
+                    }
 
                     //si se seleccionó un archivo, se borrará
                     if(verificarArchivoGuardar == true){
                         //este solo dejará la parte del "código" vacia
                         txtCodigoC.setText("");
+                        
                         archivoActual = null;
+                        setTitle("Analizador de Código en C");
                     }
+                }
+                else{
+                    //este solo dejará la parte del "código" vacia
+                    txtCodigoC.setText("");
+                    archivoActual = null;
+                    setTitle("Analizador de Código en C");
                 }
             }
             else{
                 //este solo dejará la parte del "código" vacia
                 txtCodigoC.setText("");
                 archivoActual = null;
+                setTitle("Analizador de Código en C");
             }
         }
     }//GEN-LAST:event_itemCerrarActionPerformed
@@ -459,25 +550,67 @@ public class IDE extends javax.swing.JFrame {
 
     private void txtCodigoCKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtCodigoCKeyReleased
         //esta sección de código indicará que no se han guardado cambios
-        
+
         int keyCode = evt.getKeyCode();
-        
+
         if((keyCode >= 65 && keyCode <= 90) || (keyCode >= 48 && keyCode <= 57)
-                || (keyCode >= 97 && keyCode <= 122) || (keyCode != 27 && !(keyCode >= 37
+            || (keyCode >= 97 && keyCode <= 122) || (keyCode != 27 && !(keyCode >= 37
                 && keyCode <= 40) && !(keyCode >= 16
                 && keyCode <= 18) && keyCode != 524
-                && keyCode != 20)){
-            
+            && keyCode != 20)){
+
             if(!getTitle().contains("*")){
-                setTitle("[Analizador de Código en C]*");
+                setTitle("[" + nombreArchivo + "]*");
                 verificarArchivoGuardar = false;
             }
-        
+
         }
     }//GEN-LAST:event_txtCodigoCKeyReleased
 
+    private void itemAnalisisLexicoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_itemAnalisisLexicoActionPerformed
+        try {
+            if(!txtCodigoC.getText().equals("")){
+                txtSalida.setText("");
+                analizarLexico();
+            }
+            else{
+                JOptionPane.showMessageDialog(null, "Abre los ojos 7-7 ¿cómo puedo analizar algo vacío?", "Error al generar análisis léxico", 
+                        JOptionPane.WARNING_MESSAGE);
+            }
+        } catch (IOException ex) {
+            System.out.println(ex.getMessage());
+            JOptionPane.showMessageDialog(null, "Vaya, ¿eres hacker? este archivo no pudo ser analizado léxicamente :\"3", "Error al generar análisis léxico", 
+                        JOptionPane.ERROR_MESSAGE);
+        }
+    }//GEN-LAST:event_itemAnalisisLexicoActionPerformed
+
+    private void itemLimpiarSalidaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_itemLimpiarSalidaActionPerformed
+        //limpiará el área de salida
+        txtSalida.setText("");
+    }//GEN-LAST:event_itemLimpiarSalidaActionPerformed
+
+    private void itemAnalisisSintacticoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_itemAnalisisSintacticoActionPerformed
+        String ST = txtCodigoC.getText();
+        Sintax s = new Sintax(new clases.LexerCup(new StringReader(ST)));
+        
+        try{
+            s.parse();
+            txtSalida.setText("Análisis realizado correctamente");
+            txtSalida.setForeground(Color.green);
+        }
+        catch(Exception ex){
+            Symbol sym = s.getS();
+            txtSalida.setText("Error de sintaxis. Línea: " + (sym.right + 1) + " Columna: " + (sym.left + 1) + ", Texto: \"" + sym.value + "\"");
+            txtSalida.setForeground(Color.red);
+        }
+    }//GEN-LAST:event_itemAnalisisSintacticoActionPerformed
+
     private void ventanaGuardar(){
         JFileChooser archivoGuardar = new JFileChooser();
+        
+        //Se visualizarán solo extensiones para C
+        archivoGuardar.setFileFilter(filter);
+        archivoGuardar.setSelectedFile(new File("Ejemplo_C.txt"));
 
         //que solo se pueda seleccionar un archivo
         archivoGuardar.setMultiSelectionEnabled(false);
@@ -490,6 +623,9 @@ public class IDE extends javax.swing.JFrame {
         //si la opcion es guardar, pasa a lo siguiente
         if(seleccion == JFileChooser.APPROVE_OPTION){
             archivoActual = archivoGuardar.getSelectedFile();
+            
+            //se le asigna el nombre del archivo
+            /*Buscar un método para guardar por default en ".txt"*/
 
             //procede a sobrescribir en el actual
             escribirArchivo();
@@ -498,7 +634,7 @@ public class IDE extends javax.swing.JFrame {
             verificarArchivoGuardar = true;
             
             //se pone el nombre sin sin "*"
-            setTitle("Analizador de Código en C");
+            setTitle(nombreArchivo);
         }
     }
     
@@ -511,7 +647,7 @@ public class IDE extends javax.swing.JFrame {
             verificarArchivoGuardar = true;
             
             //se pone el nombre sin sin "*"
-            setTitle("Analizador de Código en C");
+            setTitle(nombreArchivo);
         }
         catch (IOException ex) {
             //configuraciones de otros errores o alguna falla
@@ -551,13 +687,20 @@ public class IDE extends javax.swing.JFrame {
         if(!txtCodigoC.getText().equals("")){
             //checar si el archivo actual esta guardado
             if(verificarArchivoGuardar == false){
-                int confirmacion = JOptionPane.showConfirmDialog(null, "Alto ahí!!! ¿Deseas guardar tu archivo?", "Guardar", 
-                    JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE);
+                int confirmacion = JOptionPane.showConfirmDialog(null, "Alto ahí!!! ¿Deseas guardar tu archivo?",
+                        "Guardar", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE);
 
                 // 0=ok, 2=cancel
                 if(confirmacion == 0){
                     //guarda el contenido
-                    ventanaGuardar();
+                    //si el archivo no existe, se guardará como nuevo
+                    if(archivoActual == null){
+                        ventanaGuardar();
+                    }
+                    else{
+                        //simplemente se guarda
+                        escribirArchivo();
+                    }
                 }
             }
         }
@@ -638,7 +781,8 @@ public class IDE extends javax.swing.JFrame {
                 
                 while(wordR <= after){
                     if(wordR == after || String.valueOf(text.charAt(wordR)).matches("\\W")){
-                        if(text.substring(wordL, wordR).matches("(\\W)*(if|else|do|while|for|switch|case)")){
+                        if(text.substring(wordL, wordR).matches("(\\W)*(if|else|do|while|for|switch|case|break|"
+                                + "continue|default|try|catch|true|false|null)")){
                             setCharacterAttributes(wordL, wordR - wordL, att_azul, false);
                         }
                         else if(text.substring(wordL, wordR).matches("(\\W)*(void|bit|short|int|long|float|double|char)")){
@@ -673,6 +817,154 @@ public class IDE extends javax.swing.JFrame {
         String temp = txtCodigoC.getText();
         txtCodigoC.setStyledDocument(txt.getStyledDocument());
         txtCodigoC.setText(temp);
+    }
+    
+    private void analizarLexico() throws IOException{
+        int cont = 1;
+        
+        String expr = (String) txtCodigoC.getText();
+        claseLexer lexer = new claseLexer(new StringReader(expr));
+        String resultado = "LINEA " + cont + "\t\t\tSIMBOLO\n";
+        while (true) {
+            Tokens token = lexer.yylex();
+            if (token == null) {
+                txtSalida.setText(resultado);
+                return;
+            }
+            switch (token) {
+                case SALTO_DE_LINEA:
+                    cont++;
+                    resultado += "LINEA " + cont + "\n";
+                    break;
+                case COMILLAS:
+                    resultado += "  <Comillas>\t\t\t" + lexer.lexeme + "\n";
+                    break;
+                case COMILLA_SIMPLE:
+                    resultado += "  <Comilla simple>\t\t" + lexer.lexeme + "\n";
+                    break;
+                case TIPO_DE_DATO:
+                    resultado += "  <Tipo de dato>\t\t" + lexer.lexeme + "\n";
+                    break;
+                case CHAR:
+                    resultado += "  <Char>\t\t\t" + lexer.lexeme + "\n";
+                    break;
+                case IF:
+                    resultado += "  <Sentencia if>\t\t" + lexer.lexeme + "\n";
+                    break;
+                case ELSE:
+                    resultado += "  <Sentencia else>\t\t" + lexer.lexeme + "\n";
+                    break;
+                case DO:
+                    resultado += "  <Sentencia do>\t\t" + lexer.lexeme + "\n";
+                    break;
+                case WHILE:
+                    resultado += "  <Sentencia while>\t\t" + lexer.lexeme + "\n";
+                    break;
+                case FOR:
+                    resultado += "  <Sentencia for>\t\t" + lexer.lexeme + "\n";
+                    break;
+                case SWITCH:
+                    resultado += "  <Sentencia switch>\t\t" + lexer.lexeme + "\n";
+                    break;
+                case CASE:
+                    resultado += "  <Instrucción case>\t\t" + lexer.lexeme + "\n";
+                    break;
+                case BREAK:
+                    resultado += "  <Instrucción break>\t\t" + lexer.lexeme + "\n";
+                    break;
+                case CONTINUE:
+                    resultado += "  <Instrucción continue>\t\t" + lexer.lexeme + "\n";
+                    break;
+                case DEFAULT:
+                    resultado += "  <Instrucción default>\t\t" + lexer.lexeme + "\n";
+                    break;
+                case MAS:
+                    resultado += "  <Símbolo suma>\t\t" + lexer.lexeme + "\n";
+                    break;
+                case MENOS:
+                    resultado += "  <Símbolo resta>\t\t" + lexer.lexeme + "\n";
+                    break;
+                case MULTIPLICACION:
+                    resultado += "  <Símbolo multiplicar>\t\t" + lexer.lexeme + "\n";
+                    break;
+                case DIVISION:
+                    resultado += "  <Símbolo división>\t\t" + lexer.lexeme + "\n";
+                    break;
+                case MODULO:
+                    resultado += "  <Símbolo módulo>\t\t" + lexer.lexeme + "\n";
+                    break;
+                case OP_LOGICO:
+                    resultado += "  <Operador lógico>\t\t" + lexer.lexeme + "\n";
+                    break;
+                case PARENTESIS_ABRIR:
+                    resultado += "  <Abrir paréntesis>\t\t" + lexer.lexeme + "\n";
+                    break;
+                case PARENTESIS_CERRAR:
+                    resultado += "  <Cerrar paréntesis>\t\t" + lexer.lexeme + "\n";
+                    break;
+                case CORCHETE_ABRIR:
+                    resultado += "  <Abrir corchete>\t\t" + lexer.lexeme + "\n";
+                    break;
+                case CORCHETE_CERRAR:
+                    resultado += "  <Cerrar corchete>\t\t" + lexer.lexeme + "\n";
+                    break;
+                case LLAVE_ABRIR:
+                    resultado += "  <Abrir llave>\t\t" + lexer.lexeme + "\n";
+                    break;
+                case LLAVE_CERRAR:
+                    resultado += "  <Cerrar llave>\t\t" + lexer.lexeme + "\n";
+                    break;
+                case OP_RELACIONAL:
+                    resultado += "  <Operador relacional>\t\t" + lexer.lexeme + "\n";
+                    break;
+                case OP_ATRIBUCION:
+                    resultado += "  <Operador atribución>\t\t" + lexer.lexeme + "\n";
+                    break;
+                case OP_INCRE_DECRE:
+                    resultado += "  <Incremento / Decremento>\t" + lexer.lexeme + "\n";
+                    break;
+                case OP_BOOLEANO:
+                    resultado += "  <Operador booleano>\t\t" + lexer.lexeme + "\n";
+                    break;
+                case PUNTO:
+                    resultado += "  <Signo punto>\t\t" + lexer.lexeme + "\n";
+                    break;
+                case COMA:
+                    resultado += "  <Signo coma>\t\t" + lexer.lexeme + "\n";
+                    break;
+                case DOS_PUNTOS:
+                    resultado += "  <Signo dos puntos>\t\t" + lexer.lexeme + "\n";
+                    break;
+                case PUNTO_Y_COMA:
+                    resultado += "  <Signo punto y coma>\t\t" + lexer.lexeme + "\n";
+                    break;
+                case ASIGNACION:
+                    resultado += "  <Asignación>\t\t" + lexer.lexeme + "\n";
+                    break;
+                case METODO_RESERVADO:
+                    resultado += "  <Método de C>\t\t" + lexer.lexeme + "\n";
+                    break;
+                case MAIN:
+                    resultado += "  <Main del programa>\t\t" + lexer.lexeme + "\n";
+                    break;
+                case NUMERO:
+                    resultado += "  <Número>\t\t\t" + lexer.lexeme + "\n";
+                    break;
+                case IDENTIFICADOR:
+                    resultado += "  <Identificador>\t\t" + lexer.lexeme + "\n";
+                    break;
+                case ERROR:
+                    resultado += "  <Simbolo no definido>\n";
+                    break;
+                default:
+                    resultado += "  < " + lexer.lexeme + " >\n";
+                    break;
+            }
+        }
+    }
+    
+    private void analizarSintaxis(){
+        //aqui iria codigo jsjs
     }
     
     /**
@@ -713,11 +1005,14 @@ public class IDE extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenuItem itemAbrirArchivo;
+    private javax.swing.JMenuItem itemAnalisisLexico;
+    private javax.swing.JMenuItem itemAnalisisSintactico;
     private javax.swing.JMenuItem itemCerrar;
     private javax.swing.JMenuItem itemCopiar;
     private javax.swing.JMenuItem itemCortar;
     private javax.swing.JMenuItem itemGuardar;
     private javax.swing.JMenuItem itemGuardarComo;
+    private javax.swing.JMenuItem itemLimpiarSalida;
     private javax.swing.JMenuItem itemNuevo;
     private javax.swing.JMenuItem itemPegar;
     private javax.swing.JMenuItem itemSalir;

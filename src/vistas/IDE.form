@@ -93,12 +93,38 @@
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="itemCortarActionPerformed"/>
               </Events>
             </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="itemLimpiarSalida">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Limpiar pantalla de salida"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="itemLimpiarSalidaActionPerformed"/>
+              </Events>
+            </MenuItem>
           </SubComponents>
         </Menu>
         <Menu class="javax.swing.JMenu" name="menuCompilar">
           <Properties>
             <Property name="text" type="java.lang.String" value="Compilar"/>
           </Properties>
+          <SubComponents>
+            <MenuItem class="javax.swing.JMenuItem" name="itemAnalisisLexico">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="An&#xe1;lisis L&#xe9;xico"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="itemAnalisisLexicoActionPerformed"/>
+              </Events>
+            </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="itemAnalisisSintactico">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="An&#xe1;lisis Sint&#xe1;ctico"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="itemAnalisisSintacticoActionPerformed"/>
+              </Events>
+            </MenuItem>
+          </SubComponents>
         </Menu>
         <Menu class="javax.swing.JMenu" name="menuEjecutar">
           <Properties>
@@ -187,7 +213,7 @@
                   <Component id="lblCodigo" min="-2" max="-2" attributes="0"/>
                   <EmptySpace min="-2" pref="347" max="-2" attributes="0"/>
                   <Component id="lblVariables" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace pref="348" max="32767" attributes="0"/>
+                  <EmptySpace pref="338" max="32767" attributes="0"/>
                   <Component id="lblSalida" min="-2" max="-2" attributes="0"/>
                   <EmptySpace min="-2" pref="164" max="-2" attributes="0"/>
               </Group>
@@ -241,7 +267,7 @@
         </Component>
         <Component class="org.edisoncor.gui.label.LabelRect" name="lblSalida">
           <Properties>
-            <Property name="text" type="java.lang.String" value="Salida de c&#xf3;digo"/>
+            <Property name="text" type="java.lang.String" value="Pantalla de Salida"/>
             <Property name="colorDeBorde" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
               <Color blue="cc" green="33" red="0" type="rgb"/>
             </Property>
@@ -253,7 +279,7 @@
         <Container class="javax.swing.JPanel" name="jVariables">
           <Properties>
             <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-              <Color blue="33" green="33" red="33" type="rgb"/>
+              <Color blue="14" green="14" red="14" type="rgb"/>
             </Property>
             <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
               <Border info="org.netbeans.modules.form.compat2.border.MatteColorBorderInfo">
@@ -287,8 +313,14 @@
           <SubComponents>
             <Component class="javax.swing.JTextPane" name="txtCodigoC">
               <Properties>
+                <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                  <Color blue="0" green="0" red="0" type="rgb"/>
+                </Property>
                 <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
                   <Font name="Consolas" size="12" style="1"/>
+                </Property>
+                <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                  <Color blue="0" green="0" red="0" type="rgb"/>
                 </Property>
               </Properties>
               <Events>
@@ -306,8 +338,20 @@
           <SubComponents>
             <Component class="javax.swing.JTextArea" name="txtSalida">
               <Properties>
+                <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                  <Color blue="33" green="33" red="0" type="rgb"/>
+                </Property>
                 <Property name="columns" type="int" value="20"/>
+                <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+                  <Font name="Comic Sans MS" size="12" style="1"/>
+                </Property>
                 <Property name="rows" type="int" value="5"/>
+                <Property name="selectedTextColor" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                  <Color blue="0" green="0" red="0" type="rgb"/>
+                </Property>
+                <Property name="selectionColor" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                  <Color blue="ff" green="ff" red="ff" type="rgb"/>
+                </Property>
               </Properties>
             </Component>
           </SubComponents>
