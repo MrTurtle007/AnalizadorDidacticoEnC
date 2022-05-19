@@ -48,6 +48,13 @@ public class IDE extends javax.swing.JFrame {
     private FileNameExtensionFilter filter = new FileNameExtensionFilter("Archivos legibles para C", "cpp", "c", "txt");
     //guardará el nombre del archivo
     private String nombreArchivo = "Analizador de Código en C";
+    
+    /**
+     * 0 = No se ha realizado el análisis sintáctico
+     * 1 = Se realizó el analisis
+     * 2 = El análisis tiene errores
+     */
+    private int realizacionSintasix = 0;
 
     /**
      * Creates new form pantallaPrincipal
@@ -107,6 +114,7 @@ public class IDE extends javax.swing.JFrame {
         menuCompilar = new javax.swing.JMenu();
         itemAnalisisLexico = new javax.swing.JMenuItem();
         itemAnalisisSintactico = new javax.swing.JMenuItem();
+        itemAnalisisSemantico = new javax.swing.JMenuItem();
         menuEjecutar = new javax.swing.JMenu();
         jMenuItem9 = new javax.swing.JMenuItem();
         jMenuItem10 = new javax.swing.JMenuItem();
@@ -146,7 +154,7 @@ public class IDE extends javax.swing.JFrame {
         );
 
         txtCodigoC.setBackground(new java.awt.Color(0, 0, 0));
-        txtCodigoC.setFont(new java.awt.Font("Consolas", 1, 12)); // NOI18N
+        txtCodigoC.setFont(new java.awt.Font("Consolas", 1, 16)); // NOI18N
         txtCodigoC.setForeground(new java.awt.Color(0, 0, 0));
         txtCodigoC.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
@@ -307,6 +315,14 @@ public class IDE extends javax.swing.JFrame {
             }
         });
         menuCompilar.add(itemAnalisisSintactico);
+
+        itemAnalisisSemantico.setText("Análisis Semántico");
+        itemAnalisisSemantico.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                itemAnalisisSemanticoActionPerformed(evt);
+            }
+        });
+        menuCompilar.add(itemAnalisisSemantico);
 
         menuArriba.add(menuCompilar);
 
@@ -563,6 +579,8 @@ public class IDE extends javax.swing.JFrame {
                 setTitle("[" + nombreArchivo + "]*");
                 verificarArchivoGuardar = false;
             }
+            
+            realizacionSintasix = 0;
 
         }
     }//GEN-LAST:event_txtCodigoCKeyReleased
@@ -594,16 +612,50 @@ public class IDE extends javax.swing.JFrame {
         Sintax s = new Sintax(new clases.LexerCup(new StringReader(ST)));
         
         try{
-            s.parse();
-            txtSalida.setText("Análisis realizado correctamente");
-            txtSalida.setForeground(Color.green);
+            if(!txtCodigoC.getText().equals("")){
+                txtSalida.setText("");
+                s.parse();
+                txtSalida.setText("Análisis realizado correctamente");
+                txtSalida.setForeground(Color.green);
+                
+                realizacionSintasix = 1;
+            }
+            else{
+                JOptionPane.showMessageDialog(null, "Abre los ojos 7-7 ¿cómo puedo analizar algo vacío?", "Error al generar análisis sintáctico", 
+                        JOptionPane.WARNING_MESSAGE);
+            }
         }
         catch(Exception ex){
             Symbol sym = s.getS();
             txtSalida.setText("Error de sintaxis. Línea: " + (sym.right + 1) + " Columna: " + (sym.left + 1) + ", Texto: \"" + sym.value + "\"");
             txtSalida.setForeground(Color.red);
+            realizacionSintasix = 2;
         }
     }//GEN-LAST:event_itemAnalisisSintacticoActionPerformed
+
+    private void itemAnalisisSemanticoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_itemAnalisisSemanticoActionPerformed
+        try {
+            //No se realizó análisis sintáctico
+            if(realizacionSintasix == 0){
+                JOptionPane.showMessageDialog(null, "Antes, se necesita realizar el análisis sintáctico", "Problema al generar el análisis semántico", 
+                        JOptionPane.WARNING_MESSAGE);
+            }
+            //Si se realizó correctamente
+            else if(realizacionSintasix == 1){
+                txtSalida.setText("");
+                analizarSemantico();
+            }
+            //Tiene errores
+            else if(realizacionSintasix == 2){
+                JOptionPane.showMessageDialog(null, "Tu archivo tiene errores sintácticos", "Error al generar el análisis semántico", 
+                        JOptionPane.ERROR_MESSAGE);
+            }
+        } catch (IOException ex) {
+            System.out.println(ex.getMessage());
+            JOptionPane.showMessageDialog(null, "Vaya, ¿eres hacker? este archivo no pudo ser analizado semánticamente :\"3", "Error al generar análisis semántico", 
+                        JOptionPane.ERROR_MESSAGE);
+        }
+    }//GEN-LAST:event_itemAnalisisSemanticoActionPerformed
 
     private void ventanaGuardar(){
         JFileChooser archivoGuardar = new JFileChooser();
@@ -828,6 +880,7 @@ public class IDE extends javax.swing.JFrame {
         while (true) {
             Tokens token = lexer.yylex();
             if (token == null) {
+                txtSalida.setForeground(Color.white);
                 txtSalida.setText(resultado);
                 return;
             }
@@ -963,8 +1016,210 @@ public class IDE extends javax.swing.JFrame {
         }
     }
     
-    private void analizarSintaxis(){
-        //aqui iria codigo jsjs
+    private void analizarSemantico() throws IOException{
+        int cont = 1;
+
+        String expr = (String) txtCodigoC.getText();
+        claseLexer lexer = new claseLexer(new StringReader(expr));
+        String resultado = "LINEA " + cont + "\n";
+        while (true) {
+            Tokens token = lexer.yylex();
+            if (token == null) {
+                txtSalida.setForeground(Color.white);
+                txtSalida.setText(resultado);
+                return;
+            }
+            switch (token) {
+                case SALTO_DE_LINEA:
+                    cont++;
+                    resultado += "LINEA " + cont + "\n";
+                    break;
+                case COMILLAS:
+                    resultado += "  <Se abre o cierra la declaración de una cadena>\n";
+                    break;
+                case COMILLA_SIMPLE:
+                    resultado += "  <Se abre o cierra la declaración de un caracter>\n";
+                    break;
+                case TIPO_DE_DATO:
+                    resultado += "  <Se declara una variable de tipo " + lexer.lexeme + ">\n";
+                    break;
+                case CHAR:
+                    resultado += "  <Se declara una variable de tipo char>\n";
+                    break;
+                case IF:
+                    resultado += "  <Si...>\n";
+                    break;
+                case ELSE:
+                    resultado += "  <Caso contrario...>\n";
+                    break;
+                case DO:
+                    resultado += "  <Hacer...>\n";
+                    break;
+                case WHILE:
+                    resultado += "  <Mientras...>\n";
+                    break;
+                case FOR:
+                    resultado += "  <Para...>\n";
+                    break;
+                case SWITCH:
+                    resultado += "  <Interruptor...>\n";
+                    break;
+                case CASE:
+                    resultado += "  <Caso #>\n";
+                    break;
+                case BREAK:
+                    resultado += "  <Romper>\n";
+                    break;
+                case CONTINUE:
+                    resultado += "  <Continuar>\n";
+                    break;
+                case DEFAULT:
+                    resultado += "  <Default>\n";
+                    break;
+                case MAS:
+                    resultado += "  <Más>\n";
+                    break;
+                case MENOS:
+                    resultado += "  <Menos>\n";
+                    break;
+                case MULTIPLICACION:
+                    resultado += "  <Por>\n";
+                    break;
+                case DIVISION:
+                    resultado += "  <Entre>\n";
+                    break;
+                case MODULO:
+                    resultado += "  <Reciduo\n";
+                    break;
+                case OP_LOGICO:
+                    if(lexer.lexeme == "&&"){
+                        resultado += "  <Y>\n";
+                    }
+                    if(lexer.lexeme == "||"){
+                        resultado += "  <O>\n";
+                    }
+                    if(lexer.lexeme == "!"){
+                        resultado += "  <Negado>\n";
+                    }
+                    if(lexer.lexeme == "&"){
+                        resultado += "  <Y>\n";
+                    }
+                    if(lexer.lexeme == "|"){
+                        resultado += "  <O>\n";
+                    }
+                    break;
+                case PARENTESIS_ABRIR:
+                    resultado += "  <Se abre paréntesis>\n";
+                    break;
+                case PARENTESIS_CERRAR:
+                    resultado += "  <Se cierra paréntesis>\n";
+                    break;
+                case CORCHETE_ABRIR:
+                    resultado += "  <Se abre corchete>\n";
+                    break;
+                case CORCHETE_CERRAR:
+                    resultado += "  <Se cierra corchete>\n";
+                    break;
+                case LLAVE_ABRIR:
+                    resultado += "  <Se abre llave>\n";
+                    break;
+                case LLAVE_CERRAR:
+                    resultado += "  <Se cierra llave>\n";
+                    break;
+                case OP_RELACIONAL:
+                    if(lexer.lexeme == ">"){
+                        resultado += "  <Mayor que>\n";
+                    }
+                    if(lexer.lexeme == "<"){
+                        resultado += "  <Menor que>\n";
+                    }
+                    if(lexer.lexeme == "=="){
+                        resultado += "  <Es igual a>\n";
+                    }
+                    if(lexer.lexeme == "!="){
+                        resultado += "  <Diferente de>\n";
+                    }
+                    if(lexer.lexeme == ">="){
+                        resultado += "  <Mayor o igual a>\n";
+                    }
+                    if(lexer.lexeme == "<="){
+                        resultado += "  <Menor o igual a>\n";
+                    }
+                    if(lexer.lexeme == "<<"){
+                        resultado += "  <Corrimiento de bits a la izquierda>\n";
+                    }
+                    if(lexer.lexeme == ">>"){
+                        resultado += "  <Corrimiento de bits a la derecha>\n";
+                    }
+                    break;
+                case OP_ATRIBUCION:
+                    if(lexer.lexeme == "+="){
+                        resultado += "  <Se asigna con suma>\n";
+                    }
+                    if(lexer.lexeme == "-="){
+                        resultado += "  <Se asigna con resta>\n";
+                    }
+                    if(lexer.lexeme == "*="){
+                        resultado += "  <Se asigna con multipliación>\n";
+                    }
+                    if(lexer.lexeme == "/="){
+                        resultado += "  <Se asigna por división>\n";
+                    }
+                    if(lexer.lexeme == "%="){
+                        resultado += "  <Se asigna a través del residuo de la división>\n";
+                    }
+                    break;
+                case OP_INCRE_DECRE:
+                    if(lexer.lexeme == "++"){
+                        resultado += "  <Se incrementa>\n";
+                    }
+                    if(lexer.lexeme == "--"){
+                        resultado += "  <Se decrementa>\n";
+                    }
+                    break;
+                case OP_BOOLEANO:
+                    if(lexer.lexeme == "true"){
+                        resultado += "  <Verdadero>\n";
+                    }
+                    if(lexer.lexeme == "false"){
+                        resultado += "  <Falso>\n";
+                    }
+                    break;
+                case PUNTO:
+                    resultado += "  <Punto>\n";
+                    break;
+                case COMA:
+                    resultado += "  <Separador de elementos>\n";
+                    break;
+                case DOS_PUNTOS:
+                    resultado += "  <Sentencia etiquetada>\n";
+                    break;
+                case PUNTO_Y_COMA:
+                    resultado += "  <Fin de sentencia>\n";
+                    break;
+                case ASIGNACION:
+                    resultado += "  <Se asigna>\n";
+                    break;
+                case METODO_RESERVADO:
+                    resultado += "  <Método " + lexer.lexeme + ">\n";
+                    break;
+                case MAIN:
+                    resultado += "  <Punto de entrada de la aplicación>\n";
+                    break;
+                case NUMERO:
+                    resultado += "  <Número " + lexer.lexeme + ">\n";
+                    break;
+                case IDENTIFICADOR:
+                    resultado += "  <Nombre de la variable [" + lexer.lexeme + "]>\n";
+                    break;
+                case ERROR:
+                    resultado += "  <Simbolo no definido>\n";
+                    break;
+                default:
+                    resultado += "  < " + lexer.lexeme + " >\n";
+                    break;
+            }
+        }
     }
     
     /**
@@ -1006,6 +1261,7 @@ public class IDE extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenuItem itemAbrirArchivo;
     private javax.swing.JMenuItem itemAnalisisLexico;
+    private javax.swing.JMenuItem itemAnalisisSemantico;
     private javax.swing.JMenuItem itemAnalisisSintactico;
     private javax.swing.JMenuItem itemCerrar;
     private javax.swing.JMenuItem itemCopiar;
