@@ -9,6 +9,7 @@ import clases.NumeroLinea;
 import clases.Sintax;
 import clases.Tokens;
 import clases.claseLexer;
+import compilerTools.CodeBlock;
 import java.awt.Color;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -117,7 +118,7 @@ public class IDE extends javax.swing.JFrame {
         itemAnalisisSemantico = new javax.swing.JMenuItem();
         menuEjecutar = new javax.swing.JMenu();
         jMenuItem9 = new javax.swing.JMenuItem();
-        jMenuItem10 = new javax.swing.JMenuItem();
+        itemEjecutarTodo = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Analizador de Código en C");
@@ -331,8 +332,13 @@ public class IDE extends javax.swing.JFrame {
         jMenuItem9.setText("Paso a paso (Recomendado)");
         menuEjecutar.add(jMenuItem9);
 
-        jMenuItem10.setText("Todo el código");
-        menuEjecutar.add(jMenuItem10);
+        itemEjecutarTodo.setText("Todo el código");
+        itemEjecutarTodo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                itemEjecutarTodoActionPerformed(evt);
+            }
+        });
+        menuEjecutar.add(itemEjecutarTodo);
 
         menuArriba.add(menuEjecutar);
 
@@ -656,6 +662,25 @@ public class IDE extends javax.swing.JFrame {
                         JOptionPane.ERROR_MESSAGE);
         }
     }//GEN-LAST:event_itemAnalisisSemanticoActionPerformed
+
+    private void itemEjecutarTodoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_itemEjecutarTodoActionPerformed
+        //No se realizó análisis sintáctico
+        if(realizacionSintasix == 0){
+            JOptionPane.showMessageDialog(null, "¿A dónde? ¿A dónde?, Necesitas compilar", "Compilación no realizada", 
+                    JOptionPane.WARNING_MESSAGE);
+        }
+        //Si se realizó correctamente
+        else if(realizacionSintasix == 1){
+            txtSalida.setText("");
+            
+            CodeBlock codeBlock;
+        }
+        //Tiene errores
+        else if(realizacionSintasix == 2){
+            JOptionPane.showMessageDialog(null, "Tu archivo tiene errores sintácticos, no se puede ejecutar así", "Errores sintácticos", 
+                    JOptionPane.ERROR_MESSAGE);
+        }
+    }//GEN-LAST:event_itemEjecutarTodoActionPerformed
 
     private void ventanaGuardar(){
         JFileChooser archivoGuardar = new JFileChooser();
@@ -1266,13 +1291,13 @@ public class IDE extends javax.swing.JFrame {
     private javax.swing.JMenuItem itemCerrar;
     private javax.swing.JMenuItem itemCopiar;
     private javax.swing.JMenuItem itemCortar;
+    private javax.swing.JMenuItem itemEjecutarTodo;
     private javax.swing.JMenuItem itemGuardar;
     private javax.swing.JMenuItem itemGuardarComo;
     private javax.swing.JMenuItem itemLimpiarSalida;
     private javax.swing.JMenuItem itemNuevo;
     private javax.swing.JMenuItem itemPegar;
     private javax.swing.JMenuItem itemSalir;
-    private javax.swing.JMenuItem jMenuItem10;
     private javax.swing.JMenuItem jMenuItem9;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;

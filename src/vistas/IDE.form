@@ -144,10 +144,13 @@
                 <Property name="text" type="java.lang.String" value="Paso a paso (Recomendado)"/>
               </Properties>
             </MenuItem>
-            <MenuItem class="javax.swing.JMenuItem" name="jMenuItem10">
+            <MenuItem class="javax.swing.JMenuItem" name="itemEjecutarTodo">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Todo el c&#xf3;digo"/>
               </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="itemEjecutarTodoActionPerformed"/>
+              </Events>
             </MenuItem>
           </SubComponents>
         </Menu>
