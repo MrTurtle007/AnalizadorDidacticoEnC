@@ -82,7 +82,11 @@ ESPACIO=[ \t\r\n]+
 ( "=" ) {return new Symbol(sym.ASIGNACION, yychar, yyline, yytext());}
 
 /*Métodos RESERVADOS*/
-(printf | scanf | pow | sqrt | getch) {return new Symbol(sym.METODO_RESERVADO, yychar, yyline, yytext());}
+( printf ) {return new Symbol(sym.METODO_PRINTF, yychar, yyline, yytext());}
+( scanf ) {return new Symbol(sym.METODO_SCANF, yychar, yyline, yytext());}
+( pow ) {return new Symbol(sym.METODO_POW, yychar, yyline, yytext());}
+( sqrt ) {return new Symbol(sym.METODO_RAIZ, yychar, yyline, yytext());}
+( getch ) {return new Symbol(sym.METODO_ESPERA, yychar, yyline, yytext());}
 
 ( "main" ) {return new Symbol(sym.MAIN, yychar, yyline, yytext());}
 <YYINITIAL> ("(-"{D}+")")|{D}+ {return new Symbol(sym.NUMERO, yychar, yyline, yytext());}

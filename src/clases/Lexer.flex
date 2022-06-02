@@ -74,7 +74,11 @@ ESPACIO=[ \t\r]+
 ( "=" ) {lexeme=yytext(); return ASIGNACION;}
 
 /*Métodos RESERVADOS*/
-(printf | scanf | pow | sqrt | getch) {lexeme=yytext(); return METODO_RESERVADO;}
+( printf ) {lexeme=yytext(); return METODO_PRINTF;}
+( scanf ) {lexeme=yytext(); return METODO_SCANF;}
+( pow ) {lexeme=yytext(); return METODO_POW;}
+( sqrt ) {lexeme=yytext(); return METODO_RAIZ;}
+( getch ) {lexeme=yytext(); return METODO_ESPERA;}
 
 ( "main" ) {lexeme=yytext(); return MAIN;}
 ("(-"{D}+")")|{D}+ {lexeme=yytext(); return NUMERO;}

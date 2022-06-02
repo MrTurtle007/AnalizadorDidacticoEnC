@@ -9,6 +9,7 @@ import clases.NumeroLinea;
 import clases.Sintax;
 import clases.Tokens;
 import clases.claseLexer;
+import com.formdev.flatlaf.FlatIntelliJLaf;
 import compilerTools.CodeBlock;
 import java.awt.Color;
 import java.awt.event.WindowAdapter;
@@ -29,6 +30,8 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JTextPane;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
@@ -94,11 +97,12 @@ public class IDE extends javax.swing.JFrame {
         lblCodigo = new org.edisoncor.gui.label.LabelRect();
         lblVariables = new org.edisoncor.gui.label.LabelRect();
         lblSalida = new org.edisoncor.gui.label.LabelRect();
-        jVariables = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
         txtCodigoC = new javax.swing.JTextPane();
         jScrollPane1 = new javax.swing.JScrollPane();
         txtSalida = new javax.swing.JTextArea();
+        jScrollPane3 = new javax.swing.JScrollPane();
+        txtVariables = new javax.swing.JTextPane();
         menuArriba = new javax.swing.JMenuBar();
         menuArchivo = new javax.swing.JMenu();
         itemNuevo = new javax.swing.JMenuItem();
@@ -139,24 +143,10 @@ public class IDE extends javax.swing.JFrame {
         lblSalida.setColorDeBorde(new java.awt.Color(0, 51, 204));
         lblSalida.setFont(new java.awt.Font("Rockwell", 1, 14)); // NOI18N
 
-        jVariables.setBackground(new java.awt.Color(20, 20, 20));
-        jVariables.setBorder(javax.swing.BorderFactory.createMatteBorder(1, 1, 1, 1, new java.awt.Color(255, 255, 255)));
-        jVariables.setName("panel1"); // NOI18N
-
-        javax.swing.GroupLayout jVariablesLayout = new javax.swing.GroupLayout(jVariables);
-        jVariables.setLayout(jVariablesLayout);
-        jVariablesLayout.setHorizontalGroup(
-            jVariablesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 434, Short.MAX_VALUE)
-        );
-        jVariablesLayout.setVerticalGroup(
-            jVariablesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 0, Short.MAX_VALUE)
-        );
-
         txtCodigoC.setBackground(new java.awt.Color(0, 0, 0));
         txtCodigoC.setFont(new java.awt.Font("Consolas", 1, 16)); // NOI18N
-        txtCodigoC.setForeground(new java.awt.Color(0, 0, 0));
+        txtCodigoC.setForeground(new java.awt.Color(255, 255, 255));
+        txtCodigoC.setCaretColor(new java.awt.Color(0, 255, 51));
         txtCodigoC.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 txtCodigoCKeyReleased(evt);
@@ -164,6 +154,7 @@ public class IDE extends javax.swing.JFrame {
         });
         jScrollPane2.setViewportView(txtCodigoC);
 
+        txtSalida.setEditable(false);
         txtSalida.setBackground(new java.awt.Color(0, 51, 51));
         txtSalida.setColumns(20);
         txtSalida.setFont(new java.awt.Font("Comic Sans MS", 1, 12)); // NOI18N
@@ -171,6 +162,17 @@ public class IDE extends javax.swing.JFrame {
         txtSalida.setSelectedTextColor(new java.awt.Color(0, 0, 0));
         txtSalida.setSelectionColor(new java.awt.Color(255, 255, 255));
         jScrollPane1.setViewportView(txtSalida);
+
+        txtVariables.setEditable(false);
+        txtVariables.setBackground(new java.awt.Color(102, 102, 102));
+        txtVariables.setFont(new java.awt.Font("Consolas", 1, 18)); // NOI18N
+        txtVariables.setForeground(new java.awt.Color(0, 0, 0));
+        txtVariables.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                txtVariablesKeyReleased(evt);
+            }
+        });
+        jScrollPane3.setViewportView(txtVariables);
 
         javax.swing.GroupLayout panelDeVentanasLayout = new javax.swing.GroupLayout(panelDeVentanas);
         panelDeVentanas.setLayout(panelDeVentanasLayout);
@@ -188,7 +190,7 @@ public class IDE extends javax.swing.JFrame {
                 .addContainerGap()
                 .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 429, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
-                .addComponent(jVariables, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 436, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addComponent(jScrollPane1)
                 .addContainerGap())
@@ -203,9 +205,9 @@ public class IDE extends javax.swing.JFrame {
                     .addComponent(lblVariables, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(panelDeVentanasLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jVariables, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 481, Short.MAX_VALUE)
-                    .addComponent(jScrollPane1))
+                    .addComponent(jScrollPane1)
+                    .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 481, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
@@ -673,7 +675,11 @@ public class IDE extends javax.swing.JFrame {
         else if(realizacionSintasix == 1){
             txtSalida.setText("");
             
-            CodeBlock codeBlock;
+            try{
+                analisisDelCodigo();
+            } catch (IOException ex){
+                Logger.getLogger(IDE.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
         //Tiene errores
         else if(realizacionSintasix == 2){
@@ -681,6 +687,10 @@ public class IDE extends javax.swing.JFrame {
                     JOptionPane.ERROR_MESSAGE);
         }
     }//GEN-LAST:event_itemEjecutarTodoActionPerformed
+
+    private void txtVariablesKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtVariablesKeyReleased
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txtVariablesKeyReleased
 
     private void ventanaGuardar(){
         JFileChooser archivoGuardar = new JFileChooser();
@@ -833,12 +843,12 @@ public class IDE extends javax.swing.JFrame {
         final StyleContext cont = StyleContext.getDefaultStyleContext();
         
         //colores (se declaran en RGB)
-        final AttributeSet att_rojo = cont.addAttribute(cont.getEmptySet(), StyleConstants.Foreground, new Color(249, 249, 249));
-        final AttributeSet att_verde = cont.addAttribute(cont.getEmptySet(), StyleConstants.Foreground, new Color(0, 128, 0));
+        final AttributeSet att_rojo = cont.addAttribute(cont.getEmptySet(), StyleConstants.Foreground, new Color(255, 10, 0));
+        final AttributeSet att_verdeClaro = cont.addAttribute(cont.getEmptySet(), StyleConstants.Foreground, new Color(0, 255, 0));
         final AttributeSet att_cafe = cont.addAttribute(cont.getEmptySet(), StyleConstants.Foreground, new Color(128, 0, 0));
-        final AttributeSet att_azul = cont.addAttribute(cont.getEmptySet(), StyleConstants.Foreground, new Color(0, 0, 128));
-        final AttributeSet att_negro = cont.addAttribute(cont.getEmptySet(), StyleConstants.Foreground, new Color(0, 0, 0));
-        final AttributeSet att_dorado = cont.addAttribute(cont.getEmptySet(), StyleConstants.Foreground, new Color(128, 128, 0));
+        final AttributeSet att_aqua = cont.addAttribute(cont.getEmptySet(), StyleConstants.Foreground, new Color(0, 255, 255));
+        final AttributeSet att_blanco = cont.addAttribute(cont.getEmptySet(), StyleConstants.Foreground, new Color(255, 255, 255));
+        final AttributeSet att_amarillo = cont.addAttribute(cont.getEmptySet(), StyleConstants.Foreground, new Color(255, 255, 0));
         
         //estilo
         DefaultStyledDocument doc = new DefaultStyledDocument(){
@@ -859,17 +869,20 @@ public class IDE extends javax.swing.JFrame {
                 while(wordR <= after){
                     if(wordR == after || String.valueOf(text.charAt(wordR)).matches("\\W")){
                         if(text.substring(wordL, wordR).matches("(\\W)*(if|else|do|while|for|switch|case|break|"
-                                + "continue|default|try|catch|true|false|null)")){
-                            setCharacterAttributes(wordL, wordR - wordL, att_azul, false);
+                                + "continue|default|try|catch)")){
+                            setCharacterAttributes(wordL, wordR - wordL, att_aqua, false);
+                        }
+                        else if(text.substring(wordL, wordR).matches("(\\W)*(true|false|null)")){
+                            setCharacterAttributes(wordL, wordR - wordL, att_rojo, false);
                         }
                         else if(text.substring(wordL, wordR).matches("(\\W)*(void|bit|short|int|long|float|double|char)")){
-                            setCharacterAttributes(wordL, wordR - wordL, att_dorado, false);
+                            setCharacterAttributes(wordL, wordR - wordL, att_amarillo, false);
                         }
                         else if(text.substring(wordL, wordR).matches("(\\W)*(main|printf|scanf|pow|sqrt|getch)")){
-                            setCharacterAttributes(wordL, wordR - wordL, att_verde, false);
+                            setCharacterAttributes(wordL, wordR - wordL, att_verdeClaro, false);
                         }
                         else {
-                            setCharacterAttributes(wordL, wordR - wordL, att_negro, false);
+                            setCharacterAttributes(wordL, wordR - wordL, att_blanco, false);
                         }
                         
                         wordL = wordR;
@@ -1019,8 +1032,20 @@ public class IDE extends javax.swing.JFrame {
                 case ASIGNACION:
                     resultado += "  <Asignación>\t\t" + lexer.lexeme + "\n";
                     break;
-                case METODO_RESERVADO:
-                    resultado += "  <Método de C>\t\t" + lexer.lexeme + "\n";
+                case METODO_PRINTF:
+                    resultado += "  <Método printf>\t\t" + lexer.lexeme + "\n";
+                    break;
+                case METODO_SCANF:
+                    resultado += "  <Método scanf>\t\t" + lexer.lexeme + "\n";
+                    break;
+                case METODO_POW:
+                    resultado += "  <Método pow>\t\t" + lexer.lexeme + "\n";
+                    break;
+                case METODO_RAIZ:
+                    resultado += "  <Método sqrt>\t\t" + lexer.lexeme + "\n";
+                    break;
+                case METODO_ESPERA:
+                    resultado += "  <Método getch>\t\t" + lexer.lexeme + "\n";
                     break;
                 case MAIN:
                     resultado += "  <Main del programa>\t\t" + lexer.lexeme + "\n";
@@ -1036,6 +1061,120 @@ public class IDE extends javax.swing.JFrame {
                     break;
                 default:
                     resultado += "  < " + lexer.lexeme + " >\n";
+                    break;
+            }
+        }
+    }
+    
+    private void analisisDelCodigo() throws IOException{
+        String expr = (String) txtCodigoC.getText();
+        claseLexer lexer = new claseLexer(new StringReader(expr));
+        String resultado = "";
+        while (true) {
+            Tokens token = lexer.yylex();
+            if (token == null) {
+                txtVariables.setText(resultado);
+                return;
+            }
+            switch (token) {
+//                case COMILLAS:
+//                    resultado += "  <Se abre o cierra la declaración de una cadena>\n";
+//                    break;
+//                case COMILLA_SIMPLE:
+//                    resultado += "  <Se abre o cierra la declaración de un caracter>\n";
+//                    break;
+//                case TIPO_DE_DATO:
+//                    resultado += "  <Se declara una variable de tipo " + lexer.lexeme + ">\n";
+//                    break;
+//                case CHAR:
+//                    resultado += "  <Se declara una variable de tipo char>\n";
+//                    break;
+//                case MAS:
+//                    resultado += "  <Más>\n";
+//                    break;
+//                case MENOS:
+//                    resultado += "  <Menos>\n";
+//                    break;
+//                case MULTIPLICACION:
+//                    resultado += "  <Por>\n";
+//                    break;
+//                case DIVISION:
+//                    resultado += "  <Entre>\n";
+//                    break;
+//                case MODULO:
+//                    resultado += "  <Reciduo\n";
+//                    break;
+//                case CORCHETE_ABRIR:
+//                    resultado += "  <Se abre corchete>\n";
+//                    break;
+//                case CORCHETE_CERRAR:
+//                    resultado += "  <Se cierra corchete>\n";
+//                    break;
+//                case OP_ATRIBUCION:
+//                    if(lexer.lexeme == "+="){
+//                        resultado += "  <Se asigna con suma>\n";
+//                    }
+//                    if(lexer.lexeme == "-="){
+//                        resultado += "  <Se asigna con resta>\n";
+//                    }
+//                    if(lexer.lexeme == "*="){
+//                        resultado += "  <Se asigna con multipliación>\n";
+//                    }
+//                    if(lexer.lexeme == "/="){
+//                        resultado += "  <Se asigna por división>\n";
+//                    }
+//                    if(lexer.lexeme == "%="){
+//                        resultado += "  <Se asigna a través del residuo de la división>\n";
+//                    }
+//                    break;
+//                case OP_INCRE_DECRE:
+//                    if(lexer.lexeme == "++"){
+//                        resultado += "  <Se incrementa>\n";
+//                    }
+//                    if(lexer.lexeme == "--"){
+//                        resultado += "  <Se decrementa>\n";
+//                    }
+//                    break;
+//                case OP_BOOLEANO:
+//                    if(lexer.lexeme == "true"){
+//                        resultado += "  <Verdadero>\n";
+//                    }
+//                    if(lexer.lexeme == "false"){
+//                        resultado += "  <Falso>\n";
+//                    }
+//                    break;
+//                case PUNTO:
+//                    resultado += "  <Punto>\n";
+//                    break;
+//                case COMA:
+//                    resultado += "  <Separador de elementos>\n";
+//                    break;
+//                case DOS_PUNTOS:
+//                    resultado += "  <Sentencia etiquetada>\n";
+//                    break;
+//                case PUNTO_Y_COMA:
+//                    resultado += "  <Fin de sentencia>\n";
+//                    break;
+//                case ASIGNACION:
+//                    resultado += "  <Se asigna>\n";
+//                    break;
+//                case METODO_PRINTF:
+//                    resultado += "  <Método para imprimir en pantalla>\t" + lexer.lexeme + "\n";
+//                    break;
+//                case METODO_SCANF:
+//                    resultado += "  <Método para escanear>\t" + lexer.lexeme + "\n";
+//                    break;
+//                case METODO_POW:
+//                    resultado += "  <Método para elevar a una potencia>\t" + lexer.lexeme + "\n";
+//                    break;
+//                case METODO_RAIZ:
+//                    resultado += "  <Método para calcular raíz>\t" + lexer.lexeme + "\n";
+//                    break;
+//                case NUMERO:
+//                    resultado += "  <Número " + lexer.lexeme + ">\n";
+//                    break;
+                case IDENTIFICADOR:
+                    resultado += lexer.lexeme + " = \n";
                     break;
             }
         }
@@ -1225,8 +1364,20 @@ public class IDE extends javax.swing.JFrame {
                 case ASIGNACION:
                     resultado += "  <Se asigna>\n";
                     break;
-                case METODO_RESERVADO:
-                    resultado += "  <Método " + lexer.lexeme + ">\n";
+                case METODO_PRINTF:
+                    resultado += "  <Método para imprimir en pantalla>\t" + lexer.lexeme + "\n";
+                    break;
+                case METODO_SCANF:
+                    resultado += "  <Método para escanear>\t" + lexer.lexeme + "\n";
+                    break;
+                case METODO_POW:
+                    resultado += "  <Método para elevar a una potencia>\t" + lexer.lexeme + "\n";
+                    break;
+                case METODO_RAIZ:
+                    resultado += "  <Método para calcular raíz>\t" + lexer.lexeme + "\n";
+                    break;
+                case METODO_ESPERA:
+                    resultado += "  <Método para esperar>\t" + lexer.lexeme + "\n";
                     break;
                 case MAIN:
                     resultado += "  <Punto de entrada de la aplicación>\n";
@@ -1278,7 +1429,15 @@ public class IDE extends javax.swing.JFrame {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new IDE().setVisible(true);
+                try
+                {
+                    UIManager.setLookAndFeel(new FlatIntelliJLaf());
+                    new IDE().setVisible(true);
+                } catch (UnsupportedLookAndFeelException ex)
+                {
+                    Logger.getLogger(IDE.class.getName()
+                    ).log(Level.SEVERE, null, ex);
+                }
             }
         });
     }
@@ -1301,7 +1460,7 @@ public class IDE extends javax.swing.JFrame {
     private javax.swing.JMenuItem jMenuItem9;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JPanel jVariables;
+    private javax.swing.JScrollPane jScrollPane3;
     private org.edisoncor.gui.label.LabelRect lblCodigo;
     private org.edisoncor.gui.label.LabelRect lblSalida;
     private org.edisoncor.gui.label.LabelRect lblVariables;
@@ -1313,6 +1472,7 @@ public class IDE extends javax.swing.JFrame {
     private javax.swing.JPanel panelDeVentanas;
     private javax.swing.JTextPane txtCodigoC;
     private javax.swing.JTextArea txtSalida;
+    private javax.swing.JTextPane txtVariables;
     // End of variables declaration//GEN-END:variables
 
 }
