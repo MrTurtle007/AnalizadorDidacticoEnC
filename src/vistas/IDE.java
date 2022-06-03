@@ -53,6 +53,9 @@ public class IDE extends javax.swing.JFrame {
     //guardará el nombre del archivo
     private String nombreArchivo = "Analizador de Código en C";
     
+    //Arreglo que guarda las variables
+    String nombresDeVariables[] = new String[25];
+    
     /**
      * 0 = No se ha realizado el análisis sintáctico
      * 1 = Se realizó el analisis
@@ -1067,6 +1070,7 @@ public class IDE extends javax.swing.JFrame {
     }
     
     private void analisisDelCodigo() throws IOException{
+        int cont = 0;
         String expr = (String) txtCodigoC.getText();
         claseLexer lexer = new claseLexer(new StringReader(expr));
         String resultado = "";
@@ -1174,8 +1178,15 @@ public class IDE extends javax.swing.JFrame {
 //                    resultado += "  <Número " + lexer.lexeme + ">\n";
 //                    break;
                 case IDENTIFICADOR:
-                    resultado += lexer.lexeme + " = \n";
-                    break;
+                    nombresDeVariables[cont] = lexer.lexeme;
+                    if(cont != 0 && nombresDeVariables[cont].equals(nombresDeVariables[cont-1])){
+                        nombresDeVariables[cont] = null;
+                        --cont;
+                    }
+                    else{
+                        txtVariables.setText(nombresDeVariables[cont] + "= \n");
+                        ++cont;
+                    }
             }
         }
     }
